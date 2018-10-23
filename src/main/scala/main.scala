@@ -1,5 +1,5 @@
 /* SimpleProg.scala */
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Row, SparkSession}
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -192,21 +192,23 @@ object SimpleProg {
 
     val stype = spark.sql("SELECT type FROM clicks")
 
+    stype.show()
+
     //println("------------------------------------ " + stype.first().toString)
     //stype.show()
-    val newtype = stype.map( value => {
-    if (value(0) == "[null]") 0
-    else {
-    value(0).toString.head match {
-        case '0' => 1
-        case '1' => 2
-        case '2' => 3
-        case '3' => 4
+
+    val newtype = stype.map(value => {
+      print(value.toString())
+      value.toString match {
+        case "[null]" => 0
+        case "[0]" | "CLICK" => 1
+        case "[1]" => 2
+        case "[2]" => 3
+        case "[3]" => 4
         case _ => 5
       }
-     }
     })
-    //newtype.show()
+    newtype.show()
 
     //Update city
     // 0 if no city registered
@@ -221,7 +223,7 @@ object SimpleProg {
       }
 
     })
-    newcity.show()
+    //newcity.show()
 
 
 
