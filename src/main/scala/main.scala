@@ -64,8 +64,14 @@ object SimpleProg {
         case true => 1
         case false => 0
       }
-    } )
+    })
     //newLabel.show()
+
+
+
+
+
+
 
     // Update exchange column
     // 4 values so 0, 1, 2 or 3
@@ -118,30 +124,42 @@ object SimpleProg {
     })
     // newNetwork.show()
 
+    // 2 values possible
+    // 0 -> Mobile
+    // 1 -> Ordinateur
+    val newNetworkMobileOrBrowser = network.map( value => {
+      value(0) match {
+        case null => 1
+        case _ => 0
+      }
+    })
+    //newNetworkMobileOrBrowser.show()
+
     /* Problem with this part*/
     // Update size column
     // 0 -> fullScreen / square
     // 1 -> horizontal
     // 2 -> vertical
-   /* val size = spark.sql("SELECT size FROM clicks")
+    val size = spark.sql("SELECT size FROM clicks")
+    //size.show()
 
-    val sizeToStr = size.map(_.toString)
-    sizeToStr.show()
-    val newSize = sizeToStr.map( value => {
-      var array = value(0).toString.split(Array('(', ',', ' ', ')'))
-      println("---------------------------------------------------------------------")
-      println("COUCOU       " + array.size)
-      println(array.mkString(""))
-      /*val l = array.apply(1)
-      val h = array.apply(3)
-      (l, h) match {
-        case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
-        case (l, h) if l.toInt > h.toInt => 1
-        case _ => 3
-      }*/
+    //val sizeToStr = size.map( value => value.toString)
+    //sizeToStr.show()
+    /* val newSize = size.map( value => {
+       var array = value(0).toString.split(Array('(', ',', ' ', ')'))
+       println("---------------------------------------------------------------------")
+       // println("COUCOU       " + array.size)
+       println(array.mkString(""))
+       /*val l = array.apply(1)
+       val h = array.apply(3)
+       (l, h) match {
+         case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
+         case (l, h) if l.toInt > h.toInt => 1
+         case _ => 3
+       }*/
 
-    })
-    newSize.show()*/
+     })
+     newSize.show()*/
 
 
     // Change bidfloor into float at 0.1
@@ -150,7 +168,7 @@ object SimpleProg {
     val newbidfloor = bidfloor.map( value => {
       BigDecimal(value(0).toString).setScale(1, RoundingMode.HALF_UP)
     })
-     //newbidfloor.show()
+    //newbidfloor.show()
 
     //Change bidfloor into int (the closest)
 
@@ -185,7 +203,7 @@ object SimpleProg {
         case 'f' => 15
       }
     })
-    newpublisher.show()
+    //newpublisher.show()
 
     // Update type
     // null =>0, 0 => 1 , ..., CLICK => 5
@@ -213,8 +231,8 @@ object SimpleProg {
     // else 1
     //val city = spark.sql("SELECT city FROM clicks")
 
-   /* val newcity = city.map( value => {
-    }*/
+    /* val newcity = city.map( value => {
+     }*/
 
 
 
