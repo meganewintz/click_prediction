@@ -123,25 +123,22 @@ object SimpleProg {
     // 0 -> fullScreen / square
     // 1 -> horizontal
     // 2 -> vertical
-   /* val size = spark.sql("SELECT size FROM clicks")
+    val size = spark.sql("SELECT size FROM clicks")
 
     val sizeToStr = size.map(_.toString)
-    sizeToStr.show()
+
     val newSize = sizeToStr.map( value => {
-      var array = value(0).toString.split(Array('(', ',', ' ', ')'))
-      println("---------------------------------------------------------------------")
-      println("COUCOU       " + array.size)
-      println(array.mkString(""))
-      /*val l = array.apply(1)
-      val h = array.apply(3)
+      val a = value.toString.split(Array('(', ',' , ' ', ')'))
+      val l = a.apply(1)
+      val h = a.apply(3)
       (l, h) match {
         case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
         case (l, h) if l.toInt > h.toInt => 1
-        case _ => 3
-      }*/
-
+        case _ => 2
+      }
     })
-    newSize.show()*/
+    //newSize.show()
+
 
 
     // Change bidfloor into float at 0.1
@@ -185,7 +182,7 @@ object SimpleProg {
         case 'f' => 15
       }
     })
-    newpublisher.show()
+    //newpublisher.show()
 
     // Update type
     // null =>0, 0 => 1 , ..., CLICK => 5
@@ -216,7 +213,155 @@ object SimpleProg {
    /* val newcity = city.map( value => {
     }*/
 
+    //interests => 1 col for each interest
 
+
+    /*val interestsToStr = interests.map(_.toString)
+
+    val counts = interestsToStr.rdd.flatMap(line => line.toString.split(","))
+      .map(word => (word, 1))
+      .reduceByKey(_ + _)
+
+    counts.foreach(println)*/
+
+    val interests = spark.sql("SELECT interests FROM clicks")
+
+    val interestsToStr = interests.map(_.toString)
+
+    val listInterests = interestsToStr.map( value => {
+      val listInit = List.fill(26)(0)
+      var array = listInit.toArray
+      val newI = value.toString.toLowerCase
+      val iab1 = List("iab1", "entertainment", "book", "literature", "celebrity", "gossip", "fine art", "humor", "movie", "music", "television")
+      val iab2 = List("iab2", "automotive", "auto parts", "auto repair", "buying/selling cars", "car culture", "certified pre-owned", "convertible", "coupe", "crossover", "diesel", "vehicle", "pickup", "road-side", "sedan", "truck", "vintage car", "wagon")
+      val iab3 = List("iab3", "business", "advertising", "agriculture", "biotech", "biomedical", "business software", "construction", "forestry", "government", "green solution", "human ressource", "logistic", "marketing", "matal")
+      val iab4 = List("iab3", "career", "college", "financial aid", "job", "resume writing/advice", "nursing", "scholarships", "telecommuting", "military")
+      val iab5 = List("iab5", "education")
+      val iab6 = List("iab6", "family", "parenting")
+      val iab7 = List("iab7", "health", "fitness")
+      val iab8 = List("iab8", "food", "drink")
+      val iab9 = List("iab9", "hobbies", "interest")
+      val iab10 = List("iab10", "home", "garden")
+      val iab11 = List("iab11", "law", "politics")
+      val iab12 = List("iab12", "news")
+      val iab13 = List("iab13", "personal finance")
+      val iab14 = List("iab14", "society")
+      val iab15 = List("iab15", "science")
+      val iab16 = List("iab16", "pet")
+      val iab17 = List("iab17", "sport")
+      val iab18 = List("iab18", "style", "fashion")
+      val iab19 = List("iab19", "technology", "computing")
+      val iab20 = List("iab20", "travel")
+      val iab21 = List("iab21", "real estate")
+      val iab22 = List("iab22", "shopping")
+      val iab23 = List("iab23", "religion", "spirituality")
+      val iab24 = List("iab24", "uncategorized")
+      val iab25 = List("iab25", "non-standard content")
+      val iab26 = List("iab26", "illegal content")
+
+      if (iab1.exists(newI.contains)){
+        array(0) = 1
+      }
+      if (iab2.exists(newI.contains)){
+        array(1) = 1
+      }
+      if (iab3.exists(newI.contains)){
+        array(2) = 1
+      }
+      if (iab4.exists(newI.contains)){
+        array(3) = 1
+      }
+      if (iab5.exists(newI.contains)){
+        array(4) = 1
+      }
+      if (iab6.exists(newI.contains)){
+        array(5) = 1
+      }
+      if (iab7.exists(newI.contains)){
+        array(6) = 1
+      }
+      if (iab8.exists(newI.contains)){
+        array(7) = 1
+      }
+      if (iab9.exists(newI.contains)){
+        array(8) = 1
+      }
+      if (iab10.exists(newI.contains)){
+        array(9) = 1
+      }
+      if (iab11.exists(newI.contains)){
+        array(10) = 1
+      }
+      if (iab12.exists(newI.contains)){
+        array(11) = 1
+      }
+      if (iab13.exists(newI.contains)){
+        array(12) = 1
+      }
+      if (iab14.exists(newI.contains)){
+        array(13) = 1
+      }
+      if (iab15.exists(newI.contains)){
+        array(14) = 1
+      }
+      if (iab16.exists(newI.contains)){
+        array(15) = 1
+      }
+      if (iab17.exists(newI.contains)){
+        array(16) = 1
+      }
+      if (iab18.exists(newI.contains)){
+        array(17) = 1
+      }
+      if (iab19.exists(newI.contains)){
+        array(18) = 1
+      }
+      if (iab20.exists(newI.contains)){
+        array(19) = 1
+      }
+      if (iab21.exists(newI.contains)){
+        array(20) = 1
+      }
+      if (iab22.exists(newI.contains)){
+        array(21) = 1
+      }
+      if (iab23.exists(newI.contains)){
+        array(22) = 1
+      }
+      if (iab24.exists(newI.contains)){
+        array(23) = 1
+      }
+      if (iab25.exists(newI.contains)){
+        array(24) = 1
+      }
+      if (iab26.exists(newI.contains)){
+        array(25) = 1
+      }
+
+      array
+
+      /*val a = value.toString.split(Array('(', ',' , ' ', ')'))
+      val l = a.apply(1)
+      val h = a.apply(3)
+      (l, h) match {
+        case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
+        case (l, h) if l.toInt > h.toInt => 1
+        case _ => 2*/
+      })
+    listInterests.show()
+
+
+
+
+    /*val newInterests = interestsToStr.map( value => {
+      val a = value.toString.split(Array('(', ',' , ' ', ')'))
+      val l = a.apply(1)
+      val h = a.apply(3)
+      (l, h) match {
+        case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
+        case (l, h) if l.toInt > h.toInt => 1
+        case _ => 2
+      }*/
 
     //        val nbclass = appOrSite.filter(line => line.contains("app")).count()
     //        val nbjavascript = appOrSite.filter(line => line.contains("javascript")).count()
