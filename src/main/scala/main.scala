@@ -188,12 +188,12 @@ object SimpleProg {
     newpublisher.show()
 
     // Update type
-    // null =>0, 0 => 1 , ..., CLICK => 5
+    // null =>0, 0 => 1 , ..., CLICK => 1
 
-    /*val stype = spark.sql("SELECT type FROM clicks")
+    val stype = spark.sql("SELECT type FROM clicks")
 
     //println("------------------------------------ " + stype.first().toString)
-    stype.show()
+    //stype.show()
     val newtype = stype.map( value => {
     if (value(0) == "[null]") 0
     else {
@@ -206,15 +206,22 @@ object SimpleProg {
       }
      }
     })
-    newtype.show()*/
+    //newtype.show()
 
     //Update city
     // 0 if no city registered
     // else 1
-    //val city = spark.sql("SELECT city FROM clicks")
+    val city = spark.sql("SELECT city FROM clicks")
 
-   /* val newcity = city.map( value => {
-    }*/
+    val newcity = city.map( value => {
+
+      value(0) match {
+        case null => 0
+        case _ => 1
+      }
+
+    })
+    newcity.show()
 
 
 
