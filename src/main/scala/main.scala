@@ -1,7 +1,9 @@
 /* SimpleProg.scala */
 import org.apache.spark.sql.SparkSession
-
 import scala.math.BigDecimal.RoundingMode
+import org.apache.spark.ml.feature.StringIndexer
+
+import Cleaner._
 
 
 object SimpleProg {
@@ -21,78 +23,24 @@ object SimpleProg {
 
     myData.createOrReplaceTempView("clicks")
 
+    //cleanAppOrSite(spark, myData).show()
 
-    // Update appOrSite column
-    // app   = 0
-    // site  = 1
-    // --------------------------------------
-    val appOrSite = spark.sql("SELECT appOrSite FROM clicks")
+    //cleanOS(spark, myData).show()
 
-    val newAppOrsite = appOrSite.map( value => {
-      value(0) match {
-        case "app" => 0
-        case "site" => 1
-      }
-    } )
-    // newAppOrsite.show()
+    //cleanLabel(spark, myData).show()
 
-    // Update os column
-    // Android = 1
-    // IOS = 2
-    // Others = 0
-    // --------------------------------------
-    val os = spark.sql("SELECT os FROM clicks")
+    //cleanExchange(spark, myData).show()
 
-    val newOs = os.map( value => {
-      value(0) match {
-        case "Android" | "android" => 1
-        case "iOS" | "ios" => 2
-        case "Unknown" | null => 0
-        case _ => 3
-      }
-    } )
-    //newOs.show()
+    //cleanMedia(spark, myData).show()
 
-    // Update label column
-    // false = 0
-    // true = 1
-    // --------------------------------------
-    val label = spark.sql("SELECT label FROM clicks")
+    //cleanPublisher(spark, myData).show()
 
-    val newLabel = label.map( value => {
-      value(0) match {
-        case true => 1
-        case false => 0
-      }
-    } )
-    //newLabel.show()
+    //cleanUser(spark, myData).show()
 
-    // Update exchange column
-    // 4 values so 0, 1, 2 or 3
-    // --------------------------------------
-    val exchange = spark.sql("SELECT exchange FROM clicks GROUP BY exchange")
+    //cleanInterests(spark, myData).show()
 
-    val newExchange = exchange.map( value => {
-      if (value(0).toString.contains("f8dd")) 0
-      else if (value(0).toString.contains("c7a327")) 1
-      else if (value(0).toString.contains("46135")) 2
-      else  3
-    } )
-    //newExchange.show()
+    //cleanSize(spark, myData).show()
 
-    // Update media column
-    // 2 values possible
-    // if 343bc308e60156fb39cd2af57337a958 -> 0
-    // else 1
-    val media = spark.sql("SELECT media FROM clicks")
-
-    val newMedia = media.map( value => {
-      value(0) match {
-        case "343bc308e60156fb39cd2af57337a958" => 0
-        case _ => 1
-      }
-    } )
-    // newMedia.show()
 
     // Update network column
     // 7 values possible according to the geographical situation of the country
@@ -113,10 +61,12 @@ object SimpleProg {
         case '5' => 4
         case '6' => 5
         case '7' => 6
-        case _ => 0
+        case _   => 0
       }
     })
-    // newNetwork.show()
+    //newNetwork.show()
+   // val network = myData.select($"network")
+//      network.show()
 
     /* Problem with this part*/
     // Update size column
@@ -158,32 +108,6 @@ object SimpleProg {
     })
     //newbidfloor2.show()
 
-    // Update publisher : not sure the starting char means something
-    // starting by 0 -> 0 etc
-    val publisher = spark.sql("SELECT publisher FROM clicks")
-
-    val newpublisher = publisher.map( value => {
-      value(0).toString.head match {
-        case '0' => 0
-        case '1' => 1
-        case '2' => 2
-        case '3' => 3
-        case '4' => 4
-        case '5' => 5
-        case '6' => 6
-        case '7' => 7
-        case '8' => 8
-        case '9' => 9
-        case 'a' => 10
-        case 'b' => 11
-        case 'c' => 12
-        case 'd' => 13
-        case 'e' => 14
-        case 'f' => 15
-      }
-    })
-    //newpublisher.show()
-
     // Update type
     // null =>0, 0 => 1 , ..., CLICK => 5
 
@@ -212,6 +136,7 @@ object SimpleProg {
 
    /* val newcity = city.map( value => {
     }*/
+    
 
     //interests => 1 col for each interest
 
@@ -349,6 +274,8 @@ object SimpleProg {
         case _ => 2*/
       })
     listInterests.show()
+
+
 
 
 
