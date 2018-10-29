@@ -11,11 +11,25 @@ import org.apache.spark.ml.feature.StringIndexer
 
 object Cleaner {
 
+  /**
+    * Return a dataframe containing value of the geographical area from which the user uses the app or site
+    *
+    * Different geographical area:
+    * Europe + Israel = 1
+    * North and Central America = 2
+    * Asia = 3
+    * Oceania + Malaisia = 4
+    * Africa = 5
+    * South America = 6
+    * Unknown = 0
+    *
+    * @param spark the active SparkSession
+    * @param data the complete data
+    * @return dataframe of cleaned values
+    */
   def cleanNetwork(spark: SparkSession, data: DataFrame): DataFrame = {
     import spark.implicits._
     val network = data.select($"network")
-
-
 
     val newNetwork = network.map( value => {
       value(0).toString.head match {
@@ -31,18 +45,29 @@ object Cleaner {
     newNetwork.toDF("network")
   }
 
-  def cleanNetworkAppliance(spark: SparkSession, data: DataFrame): DataFrame = {
+  /**
+    * Return a dataframe containing value of the place from where the user uses the app
+    *
+    * Different locations :
+    * home = 1
+    * outside = 0
+    *
+    * @param spark the active SparkSession
+    * @param data the complete data
+    * @return dataframe of cleaned values
+    */
+  def cleanLocation(spark: SparkSession, data: DataFrame): DataFrame = {
     import spark.implicits._
 
     val network = data.select($"network")
 
-    val newAppliance = network.map( value => {
+    val newLocation = network.map( value => {
       value(0) match {
         case null => 1
         case _ => 0
       }
     })
-    newAppliance.toDF("appliance")
+    newLocation.toDF("appliance")
   }
 
   /**
@@ -275,6 +300,7 @@ object Cleaner {
     * @return a dataFrame
     */
   def cleanInterests(spark: SparkSession, data: DataFrame): (DataFrame, DataFrame) = {
+    import spark.implicits._
     /**
       * Return 0 or 1 according to the presence of an interest
       *
@@ -282,7 +308,6 @@ object Cleaner {
       * @param interests interests of a user
       * @return 1 if one of the string of iab is in interests else 0
       */
-    import spark.implicits._
     def hasInterest(iab: List[String], interests: String): Int = {
       if (iab.exists(interests.contains)){
         1
@@ -373,9 +398,10 @@ object Cleaner {
     * Return a DataFrame which contain one column "size" cleaned.
     *
     * Different size values :
-    * 0 -> fullScreen / square
-    * 1 -> horizontal
-    * 2 -> vertical
+    * 0 -> null
+    * 1 -> fullScreen / square
+    * 2 -> horizontal
+    * 3 -> vertical
     *
     * @param spark the active SparkSession
     * @param data the complete data
@@ -390,21 +416,32 @@ object Cleaner {
 
     val newSize = sizeToStr.map( value => {
       val a = value.toString.split(Array('(', ',' , ' ', ')'))
-      val l = a.apply(1)
-      val h = a.apply(3)
-      if ( (l, h) == ("300", "250") || (l, h) == ("200", "200") || (l, h) == ("250", "250") ||  (l, h) ==  ("336", "280") || (l, h) ==  ("480", "320")) 0
-      else if(l.toInt > h.toInt) 1
-      else 2
-//      (l, h) match {
-//        case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
-//        case (l, h) if l.toInt > h.toInt => 1
-//        case _ => 2
-//      }
+      a.size match {
+        case 5 => {
+          val l = a.apply(1)
+          val h = a.apply(3)
+          if ( (l, h) == ("300", "250") || (l, h) == ("200", "200") || (l, h) == ("250", "250") ||  (l, h) ==  ("336", "280") || (l, h) ==  ("480", "320")) 1
+          else if(l.toInt > h.toInt) 2
+          else 3
+        }
+        case _ => 0
+      }
     })
 
     newSize.toDF("size")
   }
 
+  /**
+    * Return a DataFrame which contain one column "city" cleaned.
+    *
+    * Different city values :
+    * 0 -> non geo-located
+    * 1 -> geo-located
+    *
+    * @param spark the active SparkSession
+    * @param data the complete data
+    * @return a dataFrame
+    */
   def cleanCity(spark: SparkSession, data: DataFrame): DataFrame = {
     import spark.implicits._
 
@@ -420,6 +457,20 @@ object Cleaner {
     newCity.toDF("city")
   }
 
+  /**
+    * Return a DataFrame which contain one column "size" cleaned.
+    *
+    * Different type values :
+    * 0 ->
+    * 1 ->
+    * 2 ->
+    * 3 ->
+    * 4 ->
+    * 5 ->
+    * @param spark the active SparkSession
+    * @param data the complete data
+    * @return a dataFrame
+    */
   def cleanType(spark: SparkSession, data: DataFrame): DataFrame = {
     import spark.implicits._
 

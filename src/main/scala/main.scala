@@ -63,15 +63,17 @@ object SimpleProg {
         .join(cleanExchange(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanMedia(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanPublisher(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanUser(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        //.join(cleanUser(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(interest1.withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(interest2.withColumn("id", monotonically_increasing_id()), Seq("id"))
-        //.join(cleanSize(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanSize(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanCity(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanType(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .drop("id")
 //
     cleanData.show()
+    /*val size = cleanSize(spark, myData)
+    size.show()*/
 
 
 
