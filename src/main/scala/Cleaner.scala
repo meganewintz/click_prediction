@@ -392,11 +392,14 @@ object Cleaner {
       val a = value.toString.split(Array('(', ',' , ' ', ')'))
       val l = a.apply(1)
       val h = a.apply(3)
-      (l, h) match {
-        case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
-        case (l, h) if l.toInt > h.toInt => 1
-        case _ => 2
-      }
+      if ( (l, h) == ("300", "250") || (l, h) == ("200", "200") || (l, h) == ("250", "250") ||  (l, h) ==  ("336", "280") || (l, h) ==  ("480", "320")) 0
+      else if(l.toInt > h.toInt) 1
+      else 2
+//      (l, h) match {
+//        case ("300", "250") | ("200", "200") | ("250", "250") | ("336", "280") | ("480", "320") => 0
+//        case (l, h) if l.toInt > h.toInt => 1
+//        case _ => 2
+//      }
     })
 
     newSize.toDF("size")
@@ -423,7 +426,6 @@ object Cleaner {
     val stype = data.select($"type")
 
     val newtype = stype.map(value => {
-      print(value.toString())
       value.toString match {
         case "[null]" => 0
         case "[0]" | "CLICK" => 1
