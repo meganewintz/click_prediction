@@ -6,10 +6,57 @@ import org.apache.spark.sql.Row
 
 import scala.math.BigDecimal.RoundingMode
 import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.sql.functions.monotonically_increasing_id
+import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.linalg.Vectors
 
 
 
 object Cleaner {
+
+  /**
+    * Return a new dataframe containing all the values cleaned
+    *
+    * @param spark the active SparkSession
+    * @param data the complete data
+    * @return dataframe of cleaned values
+    */
+  def cleanData(spark: SparkSession, data: DataFrame): DataFrame = {
+
+    val interest1 = cleanInterests(spark, data)._1
+    val interest2 = cleanInterests(spark, data)._2
+
+    val cleanData =
+      cleanAppOrSite(spark, data).withColumn("id", monotonically_increasing_id())
+        .join(cleanOS(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanExchange(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanMedia(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanPublisher(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanUser(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(interest1.withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(interest2.withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanSize(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanCity(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanType(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+          .join(cleanLabel(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+          .drop("id")
+
+
+//      val assembler = new VectorAssembler()
+//          .setInputCols(cleanData.columns)
+//          .setOutputCol("features")
+//
+//      val output = assembler.transform(cleanData)
+//      output.select("features").show()
+//
+//  //cleanData
+//        val finalData = output.select("features").withColumn("id", monotonically_increasing_id())
+//            .join(cleanLabel(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+//            .drop("id")
+
+    //cleanData.coalesce(1).write.option("header","true").csv("cleanData")
+  cleanData
+  }
 
   /**
     * Return a dataframe containing value of the geographical area from which the user uses the app or site
@@ -88,8 +135,8 @@ object Cleaner {
 
     val newLabel = label.map( value => {
       value(0) match {
-        case true => 1
-        case false => 0
+        case true => 1.0
+        case false => 0.0
       }
     } )
     newLabel.toDF("label")

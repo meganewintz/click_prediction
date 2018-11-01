@@ -1,13 +1,13 @@
 /* SimpleProg.scala */
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.monotonically_increasing_id
+
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.ml.classification.LogisticRegression
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.ml.feature.RFormula
 
 
-import scala.math.BigDecimal.RoundingMode
-import org.apache.spark.ml.feature.StringIndexer
-import org.apache.spark.sql.DataFrame
 import Cleaner._
-import shapeless.Tuple
 
 
 object SimpleProg {
@@ -21,79 +21,36 @@ object SimpleProg {
 
     import spark.implicits._
 
-    val myData = spark.read.json(myFile)
-    myData.createOrReplaceTempView("clicks")
+    val dataset = spark.read.json(myFile)
 
-    //myData.printSchema()
-    //myData.show()
+    val cleanDataset = cleanData(spark, dataset)
+    //cleanDataset
 
-    //cleanAppOrSite(spark, myData)
-
-    //cleanOS(spark, myData)
-
-    //cleanLabel(spark, myData)
-
-    //cleanExchange(spark, myData)
-
-    //cleanMedia(spark, myData).show()
-
-    //cleanPublisher(spark, myData).show()
-
-    //cleanUser(spark, myData).show()
-
-    val interest1 = cleanInterests(spark, myData)._1
-    val interest2 = cleanInterests(spark, myData)._2
-
-//    val s = cleanSize(spark, myData)
-//    s.createOrReplaceTempView("sizes")
-//    val size = spark.sql("SELECT size FROM sizes GROUP BY size ")
-//    size.show()
-
-    //cleanCity(spark, myData).show()
-    //cleanType(spark, myData).show()
-
-    //val clean = concat(cleanAppOrSite(spark, myData), cleanOS(spark, myData))
-//    cleanAppOrSite(spark, myData)
-//        .join(cleanOS(spark, myData))
-//        .show()
-
-    val cleanData = cleanAppOrSite(spark, myData).withColumn("id", monotonically_increasing_id())
-        .join(cleanOS(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanLabel(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanExchange(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanMedia(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanPublisher(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        //.join(cleanUser(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(interest1.withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(interest2.withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanSize(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanCity(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanType(spark, myData).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .drop("id")
+    
+//    val lr = new LogisticRegression()
+//        .setMaxIter(10)
+//        .setRegParam(0.3)
+//        .setElasticNetParam(0.8)
 //
-    cleanData.show()
-    /*val size = cleanSize(spark, myData)
-    size.show()*/
-
-
-
-
-//    // Change bidfloor into float at 0.1
-//    val bidfloor = myData.select($"bidfloor")
+//    // Fit the model
+//    val lrModel = lr.fit(cleanDataset)
 //
-//    val newbidfloor = bidfloor.map( value => {
-//      BigDecimal(value(0).toString).setScale(1, RoundingMode.HALF_UP)
-//    })
-//     //newbidfloor.show()
+//    // Print the coefficients and intercept for logistic regression
+//    println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
 //
-//    //Change bidfloor into int (the closest)
+    // We can also use the multinomial family for binary classification
+//    val mlr = new LogisticRegression()
+//        .setMaxIter(10)
+//        .setRegParam(0.3)
+//        .setElasticNetParam(0.8)
+//        .setFamily("binomial")
 //
-//      val bidfloor2 = myData.select($"bidfloor")
+//    val mlrModel = mlr.fit(cleanDataset)
 //
-//    val newbidfloor2 = bidfloor2.map( value => {
-//      BigDecimal(value(0).toString).setScale(0, RoundingMode.HALF_UP)
-//    })
-//    //newbidfloor2.show()
+//    // Print the coefficients and intercepts for logistic regression with multinomial family
+//    println(s"Binomial coefficients: ${mlrModel.coefficientMatrix}")
+//    println(s"Binamial intercepts: ${mlrModel.interceptVector}")
+
 
 
     spark.stop()
