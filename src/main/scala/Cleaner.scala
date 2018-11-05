@@ -32,30 +32,33 @@ object Cleaner {
         .join(cleanExchange(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanMedia(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanPublisher(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(cleanUser(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(interest1.withColumn("id", monotonically_increasing_id()), Seq("id"))
-        .join(interest2.withColumn("id", monotonically_increasing_id()), Seq("id"))
+        //.join(cleanUser(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        //.join(interest1.withColumn("id", monotonically_increasing_id()), Seq("id"))
+        //.join(interest2.withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanSize(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanCity(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanType(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
-          .join(cleanLabel(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
-          .drop("id")
+        .join(cleanLabel(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .drop("id")
+    //cleanData.show()
+    cleanData
 
+      /*val assembler = new VectorAssembler()
+          .setInputCols(cleanData.columns)
+          .setOutputCol("features")
 
-//      val assembler = new VectorAssembler()
-//          .setInputCols(cleanData.columns)
-//          .setOutputCol("features")
-//
-//      val output = assembler.transform(cleanData)
-//      output.select("features").show()
-//
-//  //cleanData
-//        val finalData = output.select("features").withColumn("id", monotonically_increasing_id())
-//            .join(cleanLabel(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
-//            .drop("id")
+      val output = assembler.transform(cleanData)
+      output.select("features").show()
 
+  //cleanData
+        val finalData = output.select("features").withColumn("id", monotonically_increasing_id())
+            .join(cleanLabel(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+            .drop("id")
+    cleanData.show()*/
+    //)
+      //finalData
     //cleanData.coalesce(1).write.option("header","true").csv("cleanData")
-  cleanData
+  //cleanData
   }
 
   /**
