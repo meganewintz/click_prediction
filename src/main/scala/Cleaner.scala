@@ -9,7 +9,7 @@ import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.sql.functions.monotonically_increasing_id
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.linalg.Vectors
-
+import scala.io.StdIn.readLine
 
 
 object Cleaner {
@@ -32,15 +32,17 @@ object Cleaner {
         .join(cleanExchange(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanMedia(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanPublisher(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        //.join(cleanUser(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
-        //.join(interest1.withColumn("id", monotonically_increasing_id()), Seq("id"))
-        //.join(interest2.withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(cleanUser(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(interest1.withColumn("id", monotonically_increasing_id()), Seq("id"))
+        .join(interest2.withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanSize(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanCity(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanType(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .join(cleanLabel(spark, data).withColumn("id", monotonically_increasing_id()), Seq("id"))
         .drop("id")
-    //cleanData.show()
+    cleanData.show()
+
+    readLine()
     cleanData
 
       /*val assembler = new VectorAssembler()

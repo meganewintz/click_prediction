@@ -27,8 +27,8 @@ object SimpleProg {
     //cleanData(spark, dataset)
     //cleanDataset
 
-    //val featuresCols = Array("appOrSite", "os", "exchange", "media", "publisher", "i1", "i2","i3", "i4", "i5", "i6", "i7","i8","i10","i11","i12", "i13", "i14", "i15", "i16", "i17", "i18", "i19", "i20", "i21", "i22", "i23", "i24", "i25", "i26", "size", "city", "type")
-    val featuresCols = Array("appOrSite", "os", "exchange", "media", "publisher", "size", "city", "type")
+    val featuresCols = Array("appOrSite", "os", "exchange", "media", "publisher", "user", "i1", "i2","i3", "i4", "i5", "i6", "i7","i8", "i9", "i10","i11","i12", "i13", "i14", "i15", "i16", "i17", "i18", "i19", "i20", "i21", "i22", "i23", "i24", "i25", "i26", "size", "city", "type")
+    //val featuresCols = Array("appOrSite", "os", "exchange", "media", "publisher", "size", "city", "type")
     val assembler = new VectorAssembler().setInputCols(featuresCols).setOutputCol("features")
     val df2 = assembler.transform(cleanDataset.toDF())
 
