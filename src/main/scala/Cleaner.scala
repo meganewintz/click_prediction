@@ -17,16 +17,17 @@ object Cleaner {
   def cleanData(spark: SparkSession, data: DataFrame): DataFrame = {
     import spark.implicits._
 
-    // Reduce the number of data to have a better proportion between label = true or false.
-    val trueValue = data.filter("label = true")
-    val falseValue = data.filter("label = false").sample(0.035)
+//    // Reduce the number of data to have a better proportion between label = true or false.
+//    val trueValue = data.filter("label = true")
+//    val falseValue = data.filter("label = false").sample(0.035)
+//
+//    val sampleData = trueValue.union(falseValue)
 
-    val sampleData = trueValue.union(falseValue)
-
+      val sampleData = data.sample(0.001)
 
     // Call all the function to clean the data
     val appOrSite = cleanAppOrSite(spark, sampleData)
-    val network   = cleanNetwork(spark, sampleData)
+    //val network   = cleanNetwork(spark, sampleData)
     val location  = cleanLocation(spark, sampleData)
     val os        = cleanOS(spark, sampleData)
     val exchange  = cleanExchange(spark, sampleData)
@@ -46,7 +47,7 @@ object Cleaner {
     val cleanData =
       appOrSite.withColumn("id", monotonically_increasing_id())
           //.join(network.withColumn("id", monotonically_increasing_id()), Seq("id"))
-          //.join(location.withColumn("id", monotonically_increasing_id()), Seq("id"))
+          .join(location.withColumn("id", monotonically_increasing_id()), Seq("id"))
           .join(os.withColumn("id", monotonically_increasing_id()), Seq("id"))
           .join(exchange.withColumn("id", monotonically_increasing_id()), Seq("id"))
           .join(media.withColumn("id", monotonically_increasing_id()), Seq("id"))
@@ -74,13 +75,14 @@ object Cleaner {
           .drop("i26")
 
     // Create the features col as a Vector.
-    val featuresCols = Array("appOrSite", "os", "exchange", "media", "bidfloor", "publisher", "user", "i1", "i2","i3", "i5", "i6","i8","i10","i12", "i13", "i15", "i19", "i21", "i22", "i25", "size", "city", "type")
+    val featuresCols = Array("appOrSite", "networkLocation", "os", "exchange", "media", "bidfloor", "publisher", "user", "i1", "i2","i3", "i5", "i6","i8","i10","i12", "i13", "i15", "i19", "i21", "i22", "i25", "size", "city", "type")
      val assembler = new VectorAssembler()
           .setInputCols(featuresCols)
           .setOutputCol("features")
 
     // Keep only the two intersting columns : features and label.
     val output = assembler.transform(cleanData).select( $"features", $"label")
+
     output
   }
 
@@ -105,15 +107,15 @@ object Cleaner {
     val network = data.select($"network")
 
     val newNetwork = network.map( value => {
-      value(0).toString.head match {
-        case '2' => 1
-        case '3' => 2
-        case '4' => 3
-        case '5' => 4
-        case '6' => 5
-        case '7' => 6
-        case _   => 0
-      }
+        value.getString(0).head match {
+          case '2' => 1
+          case '3' => 2
+          case '4' => 3
+          case '5' => 4
+          case '6' => 5
+          case '7' => 6
+          case _ => 0
+        }
     })
     newNetwork.toDF("networkZone")
   }
@@ -558,6 +560,59 @@ object Cleaner {
       }
     })
     newtype.toDF("type")
+  }
+
+  /**
+    * Return a DataFrame containing two column "label" and "prediction".
+    *
+    * Different label values :
+    * 0 = false
+    * 1 = true
+    *
+    * @param spark the active SparkSession
+    * @param data the complete data
+    * @return a DataFrame
+    */
+  def revertLabel(spark: SparkSession, data: DataFrame): DataFrame = {
+    import spark.implicits._
+
+//    val newData = data.map( value => {
+//      value.getDouble(0) match {
+//        case 0.0 =>
+//          value.getDouble(1) match {
+//            case 0.0 => Row(false, false)
+//            case 1.0 => Row(false, true)
+//        }
+//        case 1.0 =>
+//          value.getDouble(1) match {
+//            case 0.0 => Row(true, false)
+//            case 1.0 => Row(true, true)
+//          }
+//      }
+//    }
+//    )
+
+    val label = data.select($"label")
+    val newLabel = label.map( value => {
+      value(0) match {
+        case 0.0 => false
+        case 1.0 => true
+      }
+    })
+
+    val prediction = data.select($"prediction")
+
+    val newPrediction = prediction.map( value => {
+      value(0) match {
+        case 0.0 => false
+        case 1.0 => true
+      }
+    })
+
+      newLabel.withColumn("id", monotonically_increasing_id())
+          .join(newPrediction.withColumn("id", monotonically_increasing_id()), Seq("id"))
+          .drop("id")
+          .toDF("label", "prediction")
   }
 
 }

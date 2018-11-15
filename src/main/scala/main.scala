@@ -5,6 +5,7 @@ import org.apache.spark.ml.classification.{RandomForestClassificationModel, Rand
 import org.apache.spark.sql.functions._
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 
+
 import Cleaner._
 
 object ClickPrediction {
@@ -28,7 +29,6 @@ object ClickPrediction {
 
     import spark.implicits._
 
-
     val dataset = spark.read.json(filename)
 
     // Clean the dataset
@@ -38,43 +38,24 @@ object ClickPrediction {
       // Split the data into training and test sets (30% held out for testing).
       val Array(trainingData, testData) = cleanDataset.randomSplit(Array(0.8, 0.2))
 
-//    val splits = cleanDataset.randomSplit(Array(0.8, 0.2))
-//    //val splits = cleanDataset.randomSplit(Array(0.8, 0.2))
-//    val training = splits(0).cache()
-//    val trainingDF = training.toDF()
-//    val test = splits(1)
-
-//    val lr = new LogisticRegression().setMaxIter(10)
-//
-//    val paramGrid = new ParamGridBuilder()
-//        .addGrid(lr.regParam, Array(0.5, 0.3, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00001))
-//        .addGrid(lr.elasticNetParam, Array(0.5, 0.3, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00001))
-//        .build()
-//
-//    val cv = new CrossValidator()
-//        .setEstimator(lr)
-//        .setEvaluator(new BinaryClassificationEvaluator)
-//        .setEstimatorParamMaps(paramGrid)
-//        .setNumFolds(3)
-//        .setParallelism(4)
-      // val lrModel = cv.fit(trainingDF)
+    val splits = cleanDataset.randomSplit(Array(0.8, 0.2))
+    //val splits = cleanDataset.randomSplit(Array(0.8, 0.2))
+    val training = splits(0).cache()
+    val trainingDF = training.toDF()
+    val test = splits(1)
 
     // Time when the Logisitc Regression begin.
     val startTimeLr = System.nanoTime()
 
-
-
     val lr = new LogisticRegression()
         .setMaxIter(10)
-        .setRegParam(0.3)
+        .setRegParam(0.01)
         .setFamily("binomial")
         .setThreshold(0.5)
 
-//  val lr = new RandomForestClassifier()
+//  val rf = new RandomForestClassifier()
 //      .setNumTrees(10)
 
-
-//
     // Fit the model
     val lrModel = lr.fit(trainingData)
 
@@ -82,33 +63,20 @@ object ClickPrediction {
     val elapsedTimeLr1 = (System.nanoTime() - startTimeLr) / 1e9
 
 
-    // Extract the summary from the returned LogisticRegressionModel instance trained in the earlier
-    // example
-    //val trainingSummary = lrModel.binarySummary
-
-    // Obtain the objective per iteration.
-//    val objectiveHistory = trainingSummary.objectiveHistory
-//    println("objectiveHistory:")
-//    objectiveHistory.foreach(loss => println(loss))
-
-    // run the  model on testData  to get predictions
+    // run the  model on testData to get predictions
     val predictions = lrModel.transform(testData)
 
     //create an Evaluator for binary classification.
-
     val evaluator = new BinaryClassificationEvaluator()
         .setLabelCol("label")
         .setRawPredictionCol("rawPrediction")
         .setMetricName("areaUnderROC")
 
-    //Evaluates predictions and returns a scalar metric areaUnderROC(larger is better).**
+    //Evaluates predictions and returns a scalar metric.
     val accuracy = evaluator.evaluate(predictions)
-    //val roc = trainingSummary.roc
 
 
-
-
-    val lp = predictions.select( "label", "prediction", "probability")
+    val lp = predictions.select( "label", "prediction")
     val countTotal = cleanDataset.count()
     val countTraining = trainingData.count()
     val countTest = predictions.toDF().count
@@ -129,49 +97,56 @@ object ClickPrediction {
     val goodClick = trueP.toDouble/click.toDouble
     val goodNoClick = trueN.toDouble/(countTest-click.toDouble)
 
-    //roc.show()
+      // Time when the test is finish.
+      val elapsedTimeLr2 = (System.nanoTime() - startTimeLr) / 1e9
 
-    lp.show()
+    val outputPrediction = revertLabel(spark, lp)
+
+    outputPrediction
+      .coalesce(1)
+      .write.option("header","true")
+      .mode("overwrite")
+      .csv("prediction")
+
+    val elapsedTime = (System.nanoTime() - startTime) / 1e9
+
+
+    // ----------------------------------------------
+    //              Print the results
+    // ----------------------------------------------
+    //lp.show()
+    println("cleanData size : " + countTotal)
+    println("training size : " + countTraining)
     println("accuracy : " + accuracy)
     println("ratioCorrect (good classification): " + ratioCorrect)
     println("ratioWrong (wrong classification): " + ratioWrong)
-    println("cleanData size : " + countTotal)
-    println("training size : " + countTraining)
+    println("good click : " + goodClick)
+    println("good no click : " + goodNoClick)
     println("test size : " + countTest)
     println("correct : " + correct)
     println("wrong : " + wrong)
-    println("good click : " + goodClick)
-    println("good no click : " + goodNoClick)
-    println("label true : " + labelTrue)
-    println("label false : " + labelFalse)
     println("prediction true : " + predTrue)
     println("prediction false : " + predFalse)
+    println("label true : " + labelTrue)
+    println("label false : " + labelFalse)
     println("trueP (good classification click): " + trueP)
     println("trueN (good classification no click: " + trueN)
     println("falseP : " + falseP)
     println("falseN : " + falseN)
 
-
-    val elapsedTimeLr2 = (System.nanoTime() - startTimeLr) / 1e9
-    val elapsedTime = (System.nanoTime() - startTime) / 1e9
-
     println(s"Training time: $elapsedTimeLr1 seconds")
     println(s"Training + prediction time: $elapsedTimeLr2 seconds")
     println(s"Total time: $elapsedTime seconds")
-
-//    // Print the coefficients and intercept for logistic regression
-//    println('-----------------------------------------------------------------------)
-//    println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
-//    println('-----------------------------------------------------------------------)
 //
-//    // Print the coefficients and intercepts for logistic regression with multinomial family
-//    println(s"Binomial coefficients: ${lrModel.coefficientMatrix}")
-//    println(s"Binamial intercepts: ${lrModel.interceptVector}")
-
+    // Print the coefficients and intercept for logistic regression
+    println('-----------------------------------------------------------------------)
+    println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
+    println('-----------------------------------------------------------------------)
 
 
     spark.stop()
   }
+
 
 
 }
