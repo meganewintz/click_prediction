@@ -10,15 +10,18 @@ There is four steps :
 - Test the model with test data.
 - Write the result in a csv file.
 
+This project is written in Scala.
+
 
 ## Operation
 
-The program take a json file as input. By default, it takes the file "Data.json" if no file is precise.
+The program take a json file as input. By default, it takes the file "Data.json" if no file is precised.
 The output is a csv file "part-xxx" created in a folder named prediction in the current folder.
 
 ## Documentation
 
-Required: sbt 0.1 must be installed.
+Required: sbt 0.1 and scala must be installed.
+
 
 ## Start the sbt shell
 
