@@ -17,13 +17,12 @@ object Cleaner {
   def cleanData(spark: SparkSession, data: DataFrame): DataFrame = {
     import spark.implicits._
 
-//    // Reduce the number of data to have a better proportion between label = true or false.
-//    val trueValue = data.filter("label = true")
-//    val falseValue = data.filter("label = false").sample(0.035)
-//
-//    val sampleData = trueValue.union(falseValue)
+    // Reduce the number of data to have a better proportion between label = true or false.
+    val trueValue = data.filter("label = true")
+    val falseValue = data.filter("label = false").sample(0.035)
 
-      val sampleData = data.sample(0.001)
+    val sampleData = trueValue.union(falseValue)
+
 
     // Call all the function to clean the data
     val appOrSite = cleanAppOrSite(spark, sampleData)

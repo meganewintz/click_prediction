@@ -35,14 +35,8 @@ object ClickPrediction {
     val cleanDataset = cleanData(spark, dataset)
 
 
-      // Split the data into training and test sets (30% held out for testing).
-      val Array(trainingData, testData) = cleanDataset.randomSplit(Array(0.8, 0.2))
-
-    val splits = cleanDataset.randomSplit(Array(0.8, 0.2))
-    //val splits = cleanDataset.randomSplit(Array(0.8, 0.2))
-    val training = splits(0).cache()
-    val trainingDF = training.toDF()
-    val test = splits(1)
+    // Split the data into training and test sets (30% held out for testing).
+    val Array(trainingData, testData) = cleanDataset.randomSplit(Array(0.8, 0.2))
 
     // Time when the Logisitc Regression begin.
     val startTimeLr = System.nanoTime()
